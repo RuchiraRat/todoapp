@@ -1,0 +1,51 @@
+🧩 1. Overview
+Purpose – a simple web‑based To‑Do list: add tasks, toggle completion, delete items.
+Scope – demonstrates CRUD operations, MVC structure and a minimal persistent store.
+🛠 2. Technologies & Frameworks
+Layer	Component / Framework	Role
+Backend	Java 21	core language
+Spring Boot	application framework, dependency injection, embedded server
+Web MVC	Spring MVC (part of Spring Boot)	controllers, routing, view resolution
+Data	Spring Data JPA	repository abstraction
+Persistence	H2 (in‑memory or file) or any JDBC‑compatible DB	stores Task entities
+View	Thymeleaf	server‑side HTML templates
+Build	Maven (mvnw)	dependency management, build lifecycle
+Frontend styling	simple CSS under static/css/style.css	
+All dependencies are declared in pom.xml and managed via the Maven wrapper (mvnw.cmd).
+
+📁 3. Core Components
+Model – Task.java
+properties: id, title, completed
+annotated JPA entity.
+Repository – TaskRepository.java
+extends JpaRepository<Task, Long>
+provides CRUD methods automatically.
+Service – TaskService.java
+business logic & transaction boundaries (optional here).
+Controller – TaskController.java
+maps GET /, POST /, / {id}/toggle, / {id}/delete
+interacts with service/repository, adds tasks to model.
+Templates – tasks.html, edit_task.html
+rendered by Thymeleaf with data from controller.
+Configuration – application.properties
+DB URL, JPA settings etc.
+⚙️ 4. Features & Flow
+Display tasks: controller loads all tasks, view loops with th:each.
+Add new task: form posts back to /; controller saves new Task.
+Toggle complete: link triggers / {id}/toggle, flips boolean.
+Delete task: link triggers / {id}/delete.
+Edit task (if implemented) – form + controller endpoint.
+All operations return a redirect to the root URL, so the list refreshes.
+
+🔗 5. Connection Methods
+HTTP – Spring Boot’s embedded Tomcat serves requests on localhost:8080.
+Controller → Service → Repository – Spring’s DI wires beans by type.
+JPA/Hibernate – handles SQL under the hood; you don’t write queries unless needed.
+Thymeleaf – templates are resolved to HTML, allowing easy binding via th: attributes.
+✅ 6. Presentation Tips
+Start with a demo – show the running app in a browser.
+Diagram the architecture – a simple MVC flowchart.
+Highlight frameworks – why Spring Boot (auto‑configuration), Thymeleaf (template engine).
+Explain build/run – ./mvnw spring-boot:run and where config lives.
+Mention extensibility – swap H2 for MySQL, add REST endpoints, add user auth, etc.
+This structure gives your audience a clear picture of what the project is, the components you used, and how they interact. You can expand each bullet into a slide accompanied by code snippets or screenshots. Good luck with your presentation!
