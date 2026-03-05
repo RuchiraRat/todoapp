@@ -9,8 +9,34 @@
     <div class="container">
         <h1>Todo Application</h1>
 
+        <!-- Error Notification -->
+        <div id="errorNotification" class="notification notification-error" style="display: none;">
+            <span id="errorMessage"></span>
+            <button onclick="closeNotification()" class="notification-close">✕</button>
+        </div>
+
+        <!-- Success Notification -->
+        <div id="successNotification" class="notification notification-success" style="display: none;">
+            <span id="successMessage"></span>
+            <button onclick="closeNotification('success')" class="notification-close">✕</button>
+        </div>
+
+        <!-- View Tabs -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <a th:href="@{/}" style="padding:8px 16px; border:1px solid #ddd; border-radius:4px; text-decoration:none;" th:classappend="'active'">List</a>
+            <a th:href="@{/daily}" style="padding:8px 16px; border:1px solid #ddd; border-radius:4px; text-decoration:none;">Daily</a>
+            <a th:href="@{/weekly}" style="padding:8px 16px; border:1px solid #ddd; border-radius:4px; text-decoration:none;">Weekly</a>
+            <a th:href="@{/monthly}" style="padding:8px 16px; border:1px solid #ddd; border-radius:4px; text-decoration:none;">Monthly</a>
+        </div>
+
         <form th:action="@{/}" method="post" class="todo-form">
             <input type="text" name="title" placeholder="New Task" required class="form-input">
+            <select name="period" class="form-input" style="flex: 0 0 100px;">
+                <option value="day">Day</option>
+                <option value="week">Week</option>
+                <option value="month">Month</option>
+            </select>
+            <input type="time" name="dueTime" class="form-input" style="flex: 0 0 120px;" placeholder="Time">
             <button type="submit" class="btn btn-primary">Add</button>
         </form>
 
@@ -20,17 +46,51 @@
             </th:block>
 
             <th:block th:each="task : ${tasks}">
-                <li class="todo-item">
+                <li class="todo-item" th:classappend="${overdueMap[task.id]} ? 'overdue-task' : ''">
                     <div class="todo-content">
                         <span th:text="${task.title}" th:classappend="${task.completed} ? ' todo-text completed' : ' todo-text'"></span>
+                        <div class="task-meta">
+                            <span th:if="${task.dueTime != null}" class="task-time" th:text="'🕐 ' + ${#temporals.format(task.dueTime, 'HH:mm')}"></span>
+                            <span th:if="${overdueMap[task.id]}" class="overdue-badge" th:text="'⚠️ OVERDUE'"></span>
+                            <span th:if="${reminderMap[task.id]}" class="reminder-badge" th:text="'⏰ REMINDER'"></span>
+                        </div>
                     </div>
                     <div class="todo-actions">
-                        <a th:href="@{/{id}/toggle(id=${task.id})}" class="action-link action-toggle btn-sm">Toggle</a>
+                        <a th:href="@{/{id}/toggle(id=${task.id})}" 
+                           th:classappend="${overdueMap[task.id] && !task.completed} ? 'action-link action-toggle btn-sm disabled' : 'action-link action-toggle btn-sm'"
+                           th:title="${overdueMap[task.id] && !task.completed} ? 'Cannot complete overdue task' : ''"
+                           th:onclick="${overdueMap[task.id] && !task.completed} ? 'event.preventDefault(); showOverdueWarning();' : ''">Toggle</a>
                         <a th:href="@{/{id}/delete(id=${task.id})}" class="action-link action-delete btn-sm">Delete</a>
                     </div>
                 </li>
             </th:block>
         </ul>
     </div>
+
+    <script>
+        function showOverdueWarning() {
+            const errorDiv = document.getElementById('errorNotification');
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.innerHTML = '❌ Cannot complete an overdue task! Delete it or wait to create a new task.';
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function closeNotification(type = 'error') {
+            const notifId = type === 'error' ? 'errorNotification' : 'successNotification';
+            document.getElementById(notifId).style.display = 'none';
+        }
+
+        // Check for any query parameters that indicate an error
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('error')) {
+            const errorDiv = document.getElementById('errorNotification');
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.innerHTML = '❌ ' + decodeURIComponent(params.get('error'));
+            errorDiv.style.display = 'block';
+        }
+    </script>
 </body>
 </html>
